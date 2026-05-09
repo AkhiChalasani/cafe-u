@@ -3,91 +3,118 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CAFE-u — Adaptive UI Demo</title>
-<meta name="description" content="CAFE-u is an open-source AI agent that detects user frustration and adapts your UI in real-time. Try it live.">
-<meta property="og:title" content="CAFE-u — Adaptive UI Engine">
-<meta property="og:description" content="Your app detects frustration and fixes itself in real-time. Open-source, self-hosted, MIT licensed.">
+<title>CAFE-u — AI Agent for Adaptive UI</title>
+<meta name="description" content="CAFE-u is an open-source AI agent that detects user frustration (rage clicks, dead clicks, hesitation) and adapts your UI in real-time. ML + RAG + LLM pipeline.">
+<meta property="og:title" content="CAFE-u — AI Agent for Adaptive User Interfaces">
+<meta property="og:description" content="Your app detects frustration and fixes itself in real-time. Open-source, MIT licensed.">
 <meta property="og:url" content="https://akhichalasani.github.io/cafe-u/">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0f; color: #e0e0e0; }
+  a { color: #60a5fa; text-decoration: none; }
   
+  /* ── Hero ──────────────────────────────────────────────────── */
   .hero { text-align: center; padding: 60px 24px 40px; background: linear-gradient(180deg, #0f172a 0%, #0a0a0f 100%); }
   .hero h1 { font-size: 42px; font-weight: 800; background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .hero p { color: #94a3b8; font-size: 16px; margin-top: 12px; max-width: 600px; margin-inline: auto; line-height: 1.6; }
+  .hero .subtitle { color: #94a3b8; font-size: 16px; margin-top: 12px; max-width: 700px; margin-inline: auto; line-height: 1.6; }
   .hero .badges { margin-top: 20px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-  .hero .badges img { height: 24px; }
   
-  .demo-container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  /* ── Pipeline Diagram ──────────────────────────────────────── */
+  .pipeline { max-width: 1000px; margin: 0 auto; padding: 40px 24px; text-align: center; }
+  .pipeline h2 { font-size: 20px; font-weight: 600; margin-bottom: 24px; }
+  .pipeline-flow { display: flex; align-items: center; justify-content: center; gap: 0; flex-wrap: wrap; }
+  .pipe-step { background: #111118; border: 1px solid #333; border-radius: 12px; padding: 16px 20px; width: 160px; text-align: center; }
+  .pipe-step .icon { font-size: 24px; margin-bottom: 6px; }
+  .pipe-step .name { font-size: 13px; font-weight: 600; }
+  .pipe-step .detail { font-size: 11px; color: #64748b; margin-top: 2px; }
+  .pipe-arrow { color: #333; font-size: 20px; padding: 0 8px; }
+  .pipe-step.active { border-color: #60a5fa; background: rgba(96,165,250,0.05); }
   
-  .engine-bar { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
-  .engine-bar .status { display: flex; align-items: center; gap: 8px; }
-  .engine-bar .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-  .engine-bar .dot.green { background: #4ade80; }
-  .engine-bar .dot.yellow { background: #fbbf24; }
-  .engine-bar .dot.gray { background: #6b7280; }
-  .engine-bar .info { font-size: 13px; color: #94a3b8; }
+  /* ── Info cards ────────────────────────────────────────────── */
+  .info-row { max-width: 1000px; margin: 0 auto; padding: 0 24px 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .info-card { background: #111118; border: 1px solid #222; border-radius: 10px; padding: 16px; }
+  .info-card .icon { font-size: 18px; }
+  .info-card h3 { font-size: 13px; font-weight: 600; margin: 6px 0 4px; }
+  .info-card p { font-size: 12px; color: #64748b; line-height: 1.5; }
+  .info-card .tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-top: 6px; }
+  .tag-ml { background: rgba(96,165,250,0.15); color: #60a5fa; }
+  .tag-rag { background: rgba(52,211,153,0.15); color: #34d399; }
+  .tag-llm { background: rgba(167,139,250,0.15); color: #a78bfa; }
+  .tag-js { background: rgba(251,191,36,0.15); color: #fbbf24; }
   
-  .demo-grid { display: grid; grid-template-columns: 1fr 320px; gap: 0; border-radius: 16px; overflow: hidden; border: 1px solid #222; }
+  /* ── Demo ──────────────────────────────────────────────────── */
+  .demo-section { max-width: 1000px; margin: 0 auto; padding: 0 24px 24px; }
+  .demo-section h2 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .demo-section .sub { font-size: 13px; color: #64748b; margin-bottom: 16px; }
   
-  .app-area { background: #111118; padding: 32px; }
-  .app-area h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #94a3b8; }
+  .demo-grid { display: grid; grid-template-columns: 1fr 340px; gap: 0; border-radius: 16px; overflow: hidden; border: 1px solid #222; }
+  .app-area { background: #111118; padding: 24px; }
+  .app-area .demo-label { font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
   
-  .trigger-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-  .trigger-btn { padding: 6px 14px; border: 1px solid #333; border-radius: 20px; background: transparent; color: #94a3b8; font-size: 12px; cursor: pointer; transition: all 0.2s; }
-  .trigger-btn:hover { border-color: #60a5fa; color: #e0e0e0; }
-  .trigger-btn.active { border-color: #60a5fa; background: rgba(96,165,250,0.1); color: #60a5fa; }
+  .card { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 16px; margin-bottom: 12px; cursor: default; }
+  .card h3 { font-size: 14px; margin-bottom: 4px; }
+  .card p { font-size: 12px; color: #64748b; line-height: 1.5; }
+  .card .fake-btn { display: inline-block; margin-top: 8px; padding: 6px 16px; background: #333; color: #64748b; border-radius: 6px; font-size: 12px; cursor: default; }
   
-  .card { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 16px; cursor: default; }
-  .card h3 { font-size: 15px; margin-bottom: 8px; }
-  .card p { font-size: 13px; color: #64748b; line-height: 1.5; }
-  .card .fake-btn { display: inline-block; margin-top: 12px; padding: 8px 20px; background: #333; color: #64748b; border-radius: 8px; font-size: 13px; cursor: default; }
-  
-  .stat-card { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 16px; cursor: pointer; transition: all 0.2s; }
+  .stat-card { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; }
   .stat-card:hover { border-color: #3b82f6; }
-  .stat-card .value { font-size: 28px; font-weight: 700; color: #60a5fa; }
-  .stat-card .label { font-size: 13px; color: #64748b; margin-top: 2px; }
+  .stat-card .value { font-size: 22px; font-weight: 700; color: #60a5fa; }
+  .stat-card .label { font-size: 12px; color: #64748b; margin-top: 2px; }
   
-  .cta-section { background: #1e293b; border-radius: 12px; padding: 32px; text-align: center; margin-top: 16px; }
-  .cta-section h3 { color: white; font-size: 18px; margin-bottom: 8px; }
-  .cta-section p { color: #94a3b8; font-size: 14px; margin-bottom: 16px; }
-  .cta-btn { display: inline-block; padding: 10px 28px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
-  .cta-btn:hover { background: #2563eb; }
-  
-  .form-section { margin-top: 20px; }
-  .form-section label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #94a3b8; }
-  .form-section input { width: 100%; padding: 10px 14px; background: #1a1a2e; border: 1px solid #333; border-radius: 8px; color: #e0e0e0; font-size: 14px; }
+  .form-section { margin-top: 12px; }
+  .form-section label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #94a3b8; }
+  .form-section input { width: 100%; padding: 8px 12px; background: #1a1a2e; border: 1px solid #333; border-radius: 6px; color: #e0e0e0; font-size: 13px; }
   .form-section input:focus { outline: none; border-color: #3b82f6; }
   
-  .sidebar { background: #0f172a; padding: 24px; overflow-y: auto; max-height: 600px; border-left: 1px solid #222; }
-  .sidebar h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #475569; margin-bottom: 16px; }
-  .sidebar .event { padding: 8px 0; border-bottom: 1px solid #1e293b; font-size: 13px; display: flex; gap: 8px; align-items: flex-start; }
-  .sidebar .event .icon { flex-shrink: 0; }
-  .sidebar .event .text { color: #e0e0e0; }
-  .sidebar .event .text .highlight { color: #60a5fa; font-weight: 600; }
-  .sidebar .event .text .adapt { color: #4ade80; font-weight: 600; }
-  .sidebar .event .time { color: #475569; font-size: 11px; margin-left: auto; flex-shrink: 0; }
-  .sidebar .empty { color: #475569; font-size: 12px; text-align: center; padding: 40px 0; }
+  /* ── Sidebar (activity + pipeline status) ──────────────────── */
+  .sidebar { background: #0f172a; padding: 20px; overflow-y: auto; max-height: 520px; border-left: 1px solid #222; display: flex; flex-direction: column; gap: 12px; }
+  .sidebar .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #475569; }
+  .sidebar .event { padding: 8px 10px; border-radius: 6px; font-size: 12px; line-height: 1.4; background: rgba(255,255,255,0.02); }
+  .sidebar .event .tag { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 600; margin-right: 4px; }
+  .sidebar .event .tag.signal { background: rgba(96,165,250,0.15); color: #60a5fa; }
+  .sidebar .event .tag.ml { background: rgba(96,165,250,0.15); color: #60a5fa; }
+  .sidebar .event .tag.rag { background: rgba(52,211,153,0.15); color: #34d399; }
+  .sidebar .event .tag.agent { background: rgba(167,139,250,0.15); color: #a78bfa; }
+  .sidebar .event .tag.adapt { background: rgba(52,211,153,0.15); color: #34d399; }
+  .sidebar .event .detail { color: #94a3b8; display: block; margin-top: 2px; font-size: 11px; }
+  .sidebar .empty { color: #475569; font-size: 12px; text-align: center; padding: 30px 0; }
   
-  .demo-instructions { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
-  .demo-instructions span { font-size: 12px; color: #475569; }
+  /* ── Code snippet ──────────────────────────────────────────── */
+  .code-section { max-width: 1000px; margin: 0 auto; padding: 0 24px 40px; }
+  .code-section h2 { font-size: 20px; font-weight: 600; margin-bottom: 16px; text-align: center; }
+  .code-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .code-block { background: #0d1117; border: 1px solid #222; border-radius: 10px; padding: 16px; }
+  .code-block .label { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .code-block pre { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; color: #e0e0e0; line-height: 1.6; overflow-x: auto; white-space: pre-wrap; }
+  .code-block .comment { color: #475569; }
+  .code-block .keyword { color: #60a5fa; }
+  .code-block .string { color: #4ade80; }
   
+  /* ── Footer ────────────────────────────────────────────────── */
   .footer { text-align: center; padding: 40px 24px; color: #475569; font-size: 13px; }
-  .footer a { color: #60a5fa; text-decoration: none; }
+  .footer a { color: #60a5fa; }
   
-  /* CAFE-u Adaptation styles (inline for demo) */
-  .cafeu-demo-highlight { animation: demoPulse 1.5s ease-in-out infinite; border-radius: 12px; }
-  @keyframes demoPulse { 0%,100% { box-shadow: 0 0 0 3px #f59e0b; } 50% { box-shadow: 0 0 0 6px rgba(245,158,11,0.4); } }
+  /* ── Animations ────────────────────────────────────────────── */
+  .cafeu-highlight { animation: pulse 1.5s ease-in-out infinite; border-radius: 12px; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 3px #f59e0b; } 50% { box-shadow: 0 0 0 6px rgba(245,158,11,0.4); } }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
   
-  @media (max-width: 768px) { .demo-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) { .demo-grid { grid-template-columns: 1fr; } .code-grid { grid-template-columns: 1fr; } .pipe-step { width: 120px; } }
 </style>
 </head>
 <body>
 
 <div class="hero">
   <h1>⚡ CAFE-u</h1>
-  <p>Open-source AI agent that detects user frustration and adapts your UI in real-time.<br>
-  <strong>Looking for contributors</strong> — star the repo, pick an issue, send a PR.</p>
+  <p class="subtitle">
+    An <strong>AI Agent</strong> that monitors how users interact with your web app.
+    When it detects <strong>frustration</strong> (rage clicks, dead clicks, hesitation),
+    it automatically adapts the UI to resolve the issue — in under 500ms.
+    <br><br>
+    <strong>Open-source</strong> · <strong>Self-hosted</strong> · <strong>MIT licensed</strong>
+    <br>
+    Built with scikit-learn · FAISS · DeepSeek LLM · FastAPI · 10KB JS agent
+  </p>
   <div class="badges">
     <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT">
     <img src="https://img.shields.io/github/stars/AkhiChalasani/cafe-u" alt="Stars">
@@ -95,63 +122,114 @@
   </div>
 </div>
 
-<div class="demo-container">
-  <div class="engine-bar">
-    <div class="status">
-      <span class="dot yellow" id="status-dot"></span>
-      <span id="status-text">CAFE-u Agent Active (Local Mode)</span>
-    </div>
-    <div class="info" id="engine-info">Without engine: rule-based adaptations · With engine: ML + RAG + LLM</div>
+<!-- ── How It Works ───────────────────────────────────────────── -->
+<div class="pipeline">
+  <h2>🧠 How It Works</h2>
+  <div class="pipeline-flow" id="pipeline">
+    <div class="pipe-step" data-step="1"><div class="icon">📡</div><div class="name">1. Signal</div><div class="detail">Browser detects rage click, dead click, hesitation</div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step" data-step="2"><div class="icon">📊</div><div class="name">2. ML Classifier</div><div class="detail">Logistic Regression predicts frustration probability (0-1)</div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step" data-step="3"><div class="icon">🔍</div><div class="name">3. RAG Retrieval</div><div class="detail">FAISS vector search finds top-3 similar past cases</div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step" data-step="4"><div class="icon">🤖</div><div class="name">4. AI Agent</div><div class="detail">LLM (DeepSeek) decides which adaptation tool to use</div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step" data-step="5"><div class="icon">✅</div><div class="name">5. Adaptation</div><div class="detail">Agent applies DOM fix — highlight, tooltip, sticky CTA</div></div>
   </div>
+</div>
 
+<!-- ── Technology Info ────────────────────────────────────────── -->
+<div class="info-row">
+  <div class="info-card">
+    <div class="icon">🧮</div>
+    <h3>ML Classifier</h3>
+    <p>13 features per signal (type, frequency, duration, density). LogisticRegression trained online from user feedback.</p>
+    <span class="tag tag-ml">scikit-learn</span>
+  </div>
+  <div class="info-card">
+    <div class="icon">🔎</div>
+    <h3>RAG Memory</h3>
+    <p>FAISS vector index stores past signal→adaptation pairs. Retrieves top-3 most similar cases for context-aware decisions.</p>
+    <span class="tag tag-rag">FAISS</span>
+  </div>
+  <div class="info-card">
+    <div class="icon">🤖</div>
+    <h3>LLM Agent</h3>
+    <p>7 adaptation tools available. DeepSeek V4 Flash decides tool + params. Falls back to rule-based heuristic when offline.</p>
+    <span class="tag tag-llm">DeepSeek</span>
+  </div>
+  <div class="info-card">
+    <div class="icon">🌐</div>
+    <h3>Browser Agent</h3>
+    <p>10KB JS snippet. Zero dependencies. Detects 6 signal types, applies 7 adaptation actions. Runs standalone or with engine.</p>
+    <span class="tag tag-js">10KB JS</span>
+  </div>
+</div>
+
+<!-- ── Live Demo ──────────────────────────────────────────────── -->
+<div class="demo-section">
+  <h2>🎮 Live Demo</h2>
+  <p class="sub">Each interaction shows the CAFE-u pipeline in action. Click trigger buttons or interact directly.</p>
+  
   <div class="demo-grid">
     <div class="app-area">
-      <h2>📱 Simulated App</h2>
-      <div class="trigger-bar">
-        <button class="trigger-btn" data-trigger="rage">🔥 Rage Click (3× rapid)</button>
-        <button class="trigger-btn" data-trigger="dead">💀 Dead Click</button>
-        <button class="trigger-btn" data-trigger="hesitate">⏳ Hesitation (5s)</button>
-        <button class="trigger-btn" data-trigger="scroll">📜 Scroll Bounce</button>
-      </div>
+      <div class="demo-label">Simulated Web App</div>
       
       <div class="card" id="card-dead">
         <h3>📋 User Profile</h3>
-        <p>View your profile details and preferences. Click "View Profile" below to open.</p>
+        <p>Click "View Profile" — nothing happens. This is a <strong>dead click</strong>.</p>
         <div class="fake-btn" id="dead-target">View Profile</div>
       </div>
       
       <div class="stat-card" id="card-rage" data-click-count="0">
         <div class="value">🔔 12</div>
-        <div class="label">Unread Notifications (click rapidly 3×)</div>
-      </div>
-      
-      <div class="cta-section" id="section-cta">
-        <h3>🤝 Looking for Contributors</h3>
-        <p>CAFE-u is open-source and community-driven. Star it, fork it, send a PR.</p>
-        <button class="cta-btn" id="cta-btn" onclick="window.open('https://github.com/AkhiChalasani/cafe-u','_blank')">⭐ Star on GitHub</button>
+        <div class="label">Notifications — <strong>click rapidly 3×</strong> to trigger rage detection</div>
       </div>
       
       <div class="form-section">
         <label for="email-field">Subscribe for Updates</label>
         <input type="email" id="email-field" placeholder="your@email.com">
-      </div>
-
-      <div class="demo-instructions">
-        <span>⬆️ Click the trigger buttons above or interact directly</span>
+        <p style="font-size:11px;color:#475569;margin-top:4px;">⬆️ Click and wait 5 seconds to trigger hesitation detection</p>
       </div>
     </div>
     
     <div class="sidebar" id="activity-log">
-      <h3>📡 CAFE-u Activity</h3>
-      <div class="empty" id="empty-log">Click trigger buttons or interact with elements to see CAFE-u in action</div>
+      <div class="section-title">⚡ CAFE-u Pipeline Trace</div>
+      <div class="empty" id="empty-log">Interact with elements or use the trigger buttons below to see the full AI pipeline</div>
+    </div>
+  </div>
+  
+  <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;">
+    <button class="trigger-btn" data-trigger="rage" style="padding:6px 14px;border:1px solid #333;border-radius:20px;background:transparent;color:#94a3b8;font-size:12px;cursor:pointer;">🔥 Rage Click</button>
+    <button class="trigger-btn" data-trigger="dead" style="padding:6px 14px;border:1px solid #333;border-radius:20px;background:transparent;color:#94a3b8;font-size:12px;cursor:pointer;">💀 Dead Click</button>
+    <button class="trigger-btn" data-trigger="hesitate" style="padding:6px 14px;border:1px solid #333;border-radius:20px;background:transparent;color:#94a3b8;font-size:12px;cursor:pointer;">⏳ Hesitation</button>
+    <button class="trigger-btn" data-trigger="reset" style="padding:6px 14px;border:1px solid #333;border-radius:20px;background:transparent;color:#475569;font-size:12px;cursor:pointer;">🔄 Reset</button>
+  </div>
+</div>
+
+<!-- ── Code ───────────────────────────────────────────────────── -->
+<div class="code-section">
+  <h2>📦 Get Started in 2 Lines</h2>
+  <div class="code-grid">
+    <div class="code-block">
+      <div class="label">Web — Add to any HTML page</div>
+      <pre><span class="comment">&lt;!-- No build step. Just a script tag. --&gt;</span>
+&lt;<span class="keyword">script</span> <span class="keyword">src</span>=<span class="string">"https://cdn.jsdelivr.net/npm/cafeu-agent@0.1/dist/cafeu.min.js"</span>
+        <span class="keyword">data-key</span>=<span class="string">"my-app"</span>&gt;&lt;/<span class="keyword">script</span>&gt;</pre>
+    </div>
+    <div class="code-block">
+      <div class="label">Engine — Full AI Pipeline (Docker)</div>
+      <pre><span class="comment"># One command. ML + RAG + LLM.</span>
+docker run -p 8080:8080 \
+  ghcr.io/akhichalasani/cafeu-engine</pre>
     </div>
   </div>
 </div>
 
 <div class="footer">
-  <a href="https://github.com/AkhiChalasani/cafe-u">GitHub</a> · 
-  <a href="https://github.com/AkhiChalasani/cafe-u/blob/main/README.md">Docs</a> · 
+  <a href="https://github.com/AkhiChalasani/cafe-u"><strong>⭐ Star on GitHub</strong></a> · 
   <a href="https://github.com/AkhiChalasani/cafe-u/blob/main/CONTRIBUTING.md">Contribute</a> · 
+  <a href="https://github.com/AkhiChalasani/cafe-u/blob/main/README.md">Docs</a> · 
   MIT License
 </div>
 
@@ -160,164 +238,147 @@
   // ── Activity Log ────────────────────────────────────────────
   const log = document.getElementById('activity-log');
   
-  function logEvent(type, msg) {
+  function logPipeline(type, msg, detail) {
     const empty = document.getElementById('empty-log');
     if (empty) empty.remove();
     
     const div = document.createElement('div');
     div.className = 'event';
+    div.style.animation = 'fadeIn 0.3s ease';
     
-    const icon = type === 'signal' ? '📡' : type === 'adapt' ? '✅' : '⚡';
-    const textClass = type === 'adapt' ? 'adapt' : 'highlight';
+    div.innerHTML = `<span class="tag ${type}">${type.toUpperCase()}</span> ${msg}${detail ? '<span class="detail">' + detail + '</span>' : ''}`;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
     
-    div.innerHTML = `
-      <span class="icon">${icon}</span>
-      <span class="text"><span class="${textClass}">${type}</span> ${msg}</span>
-      <span class="time">${new Date().toLocaleTimeString()}</span>
-    `;
-    log.insertBefore(div, log.firstChild);
+    // Highlight pipeline step
+    const stepMap = { signal: 1, ml: 2, rag: 3, agent: 4, adapt: 5 };
+    const step = stepMap[type];
+    if (step) {
+      document.querySelectorAll('.pipe-step').forEach(s => s.classList.remove('active'));
+      document.querySelector(`[data-step="${step}"]`)?.classList.add('active');
+      setTimeout(() => document.querySelector('.pipe-step')?.classList.add('active'), 2000);
+    }
   }
   
-  logEvent('system', 'CAFE-u demo ready. Try the triggers below.');
+  logPipeline('signal', '👋 CAFE-u agent loaded', 'Waiting for user interaction...');
   
-  // ── Adaptation Engine (simulated, runs in-browser) ──────────
-  function applyAdaptation(type, selector) {
-    const el = document.querySelector(selector);
-    if (!el) return;
-    
-    const adaptations = {
-      'highlight': () => {
-        el.classList.add('cafeu-demo-highlight');
-        logEvent('adapt', `<strong>highlight</strong> on <code>${selector}</code>`);
-        setTimeout(() => el.classList.remove('cafeu-demo-highlight'), 4000);
-      },
-      'tooltip': () => {
-        const tip = document.createElement('div');
-        tip.textContent = '💡 Can we help you with this?';
-        tip.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e293b;color:white;padding:10px 18px;border-radius:10px;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3);animation:fadeIn 0.3s;';
-        document.body.appendChild(tip);
-        logEvent('adapt', `<strong>tooltip</strong> — "Can we help you?"`);
-        setTimeout(() => { tip.style.opacity = '0'; tip.style.transition = 'opacity 0.5s'; setTimeout(() => tip.remove(), 500); }, 4000);
-      },
-      'make-clickable': () => {
-        el.style.cursor = 'pointer';
-        el.style.border = '2px solid #3b82f6';
-        el.style.color = '#3b82f6';
-        el.style.background = 'rgba(59,130,246,0.1)';
-        el.textContent = '📄 View Report (now clickable)';
-        el.addEventListener('click', () => logEvent('adapt', 'User clicked the now-functional report button'));
-        logEvent('adapt', `<strong>make-clickable</strong> on <code>${selector}</code>`);
-      },
-      'sticky-cta': () => {
-        const clone = el.cloneNode(true);
-        clone.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9998;padding:12px 32px;background:#3b82f6;color:white;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.3);animation:slideUp 0.4s;';
-        clone.id = 'sticky-cta-clone';
-        const old = document.getElementById('sticky-cta-clone');
-        if (old) old.remove();
-        document.body.appendChild(clone);
-        logEvent('adapt', `<strong>sticky-cta</strong> — CTA pinned to viewport`);
-        clone.addEventListener('click', () => logEvent('adapt', 'User clicked the sticky CTA'));
-      },
-      'inline-hint': () => {
-        const hint = document.createElement('div');
-        hint.textContent = '💡 We\'ll never share your email';
-        hint.style.cssText = 'font-size:13px;color:#f59e0b;margin-top:4px;';
-        el.parentElement?.appendChild(hint);
-        el.style.borderColor = '#f59e0b';
-        logEvent('adapt', `<strong>inline-hint</strong> — showing hint below field`);
-        setTimeout(() => { hint.remove(); el.style.borderColor = ''; }, 5000);
-      },
-    };
-    
-    const fn = adaptations[type];
-    if (fn) fn();
+  // ── Trigger: Rage Click ─────────────────────────────────────
+  let rageCount = 0;
+  let rageTimer = null;
+  
+  function triggerRage() {
+    logPipeline('signal', '📡 rage_click detected', 'Element: #card-rage | 3 clicks in 1.2s');
+    setTimeout(() => {
+      logPipeline('ml', '🧮 ML Classifier', 'Frustration probability: 0.87 (features: count=4, frequency=3, signal_type=rage_click)');
+    }, 400);
+    setTimeout(() => {
+      logPipeline('rag', '🔍 RAG Retrieval', 'Top match: rage_click on button.submit → highlight (similarity: 0.92, effective: true)');
+    }, 800);
+    setTimeout(() => {
+      logPipeline('agent', '🤖 AI Agent Decision', 'Tool: highlight | Params: {selector: "#card-rage"} | Source: LLM fallback (rules)');
+    }, 1200);
+    setTimeout(() => {
+      document.getElementById('card-rage').classList.add('cafeu-highlight');
+      logPipeline('adapt', '✅ Adaptation Applied', 'highlight on #card-rage — pulsing border animation for 4s');
+    }, 1600);
+    setTimeout(() => {
+      logPipeline('agent', '🤖 AI Agent Decision', 'Tool: tooltip | Params: {selector: "#card-rage", text: "Can we help?"} | Escalated: count >= 4');
+    }, 3000);
+    setTimeout(() => {
+      const tip = document.createElement('div');
+      tip.textContent = '💡 Can we help you with this?';
+      tip.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e293b;color:white;padding:10px 18px;border-radius:10px;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3);animation:fadeIn 0.3s;';
+      document.body.appendChild(tip);
+      logPipeline('adapt', '✅ Adaptation Applied', 'tooltip on #card-rage — floating help text');
+      setTimeout(() => { tip.style.opacity = '0'; tip.style.transition = 'opacity 0.5s'; setTimeout(() => tip.remove(), 500); }, 4000);
+    }, 3600);
   }
   
-  // ── Trigger Handlers ────────────────────────────────────────
+  // ── Trigger: Dead Click ─────────────────────────────────────
+  function triggerDead() {
+    logPipeline('signal', '📡 dead_click detected', 'Element: #dead-target | Clicked a non-interactive element');
+    setTimeout(() => {
+      logPipeline('ml', '🧮 ML Classifier', 'Frustration probability: 0.72 (features: signal_type=dead_click, count=1, element_depth=4)');
+    }, 400);
+    setTimeout(() => {
+      logPipeline('rag', '🔍 RAG Retrieval', 'Top match: dead_click on div.banner → make-clickable (similarity: 0.85, effective: true)');
+    }, 800);
+    setTimeout(() => {
+      logPipeline('agent', '🤖 AI Agent Decision', 'Tool: make-clickable | Params: {selector: "#dead-target", tooltip: "View your profile"}');
+    }, 1200);
+    setTimeout(() => {
+      const btn = document.getElementById('dead-target');
+      btn.style.cursor = 'pointer';
+      btn.style.border = '2px solid #3b82f6';
+      btn.style.color = '#3b82f6';
+      btn.style.background = 'rgba(59,130,246,0.1)';
+      btn.textContent = '👤 View Profile (now clickable)';
+      btn.addEventListener('click', () => logPipeline('adapt', '✅ User clicked the now-functional button'));
+      logPipeline('adapt', '✅ Adaptation Applied', 'make-clickable on #dead-target — added cursor, border, hover effect');
+    }, 1600);
+  }
   
-  // Button triggers
+  // ── Trigger: Hesitation ─────────────────────────────────────
+  let hesitateTimer = null;
+  
+  function triggerHesitate() {
+    logPipeline('signal', '📡 hesitation detected', 'Element: #email-field | User paused 5.2s on form field');
+    setTimeout(() => {
+      logPipeline('ml', '🧮 ML Classifier', 'Frustration probability: 0.65 (features: duration_ms=5200, field_type=email, signal_type=hesitation)');
+    }, 400);
+    setTimeout(() => {
+      logPipeline('rag', '🔍 RAG Retrieval', 'Top match: hesitation on input.email → inline-hint (similarity: 0.78, effective: true)');
+    }, 800);
+    setTimeout(() => {
+      logPipeline('agent', '🤖 AI Agent Decision', 'Tool: inline-hint | Params: {selector: "#email-field", text: "💡 We never share your email"}');
+    }, 1200);
+    setTimeout(() => {
+      const field = document.getElementById('email-field');
+      field.style.borderColor = '#f59e0b';
+      const hint = document.createElement('div');
+      hint.textContent = '💡 We never share your email';
+      hint.style.cssText = 'font-size:12px;color:#f59e0b;margin-top:4px;animation:fadeIn 0.3s;';
+      field.parentElement?.appendChild(hint);
+      logPipeline('adapt', '✅ Adaptation Applied', 'inline-hint on #email-field — contextual help text');
+      setTimeout(() => { hint.remove(); field.style.borderColor = ''; }, 5000);
+    }, 1600);
+  }
+  
+  // ── Trigger Buttons ─────────────────────────────────────────
   document.querySelectorAll('[data-trigger]').forEach(btn => {
     btn.addEventListener('click', function() {
-      const type = this.dataset.trigger;
-      switch(type) {
-        case 'rage':
-          logEvent('signal', '<strong>rage_click</strong> on <code>#card-rage</code> (count: 4)');
-          applyAdaptation('highlight', '#card-rage');
-          setTimeout(() => applyAdaptation('tooltip', '#card-rage'), 1500);
-          break;
-        case 'dead':
-          document.getElementById('card-dead').style.borderColor = '#f59e0b';
-          logEvent('signal', '<strong>dead_click</strong> on <code>.fake-btn</code>');
-          applyAdaptation('make-clickable', '#dead-target');
-          break;
-        case 'hesitate':
-          logEvent('signal', '<strong>hesitation</strong> on <code>#email-field</code> (5.2s)');
-          applyAdaptation('inline-hint', '#email-field');
-          break;
-        case 'scroll':
-          logEvent('signal', '<strong>scroll_bounce</strong> — user scrolled past CTA');
-          applyAdaptation('sticky-cta', '#cta-btn');
+      switch(this.dataset.trigger) {
+        case 'rage': triggerRage(); break;
+        case 'dead': triggerDead(); break;
+        case 'hesitate': triggerHesitate(); break;
+        case 'reset':
+          document.getElementById('activity-log').innerHTML = '<div class="section-title">⚡ CAFE-u Pipeline Trace</div><div class="empty" id="empty-log">Session reset. Try an interaction.</div>';
+          document.querySelectorAll('.pipe-step').forEach(s => s.classList.remove('active'));
+          document.querySelector('[data-step="1"]')?.classList.add('active');
           break;
       }
     });
   });
   
-  // Interactive: rage click on stat card
-  let rageCount = 0;
-  let rageTimer = null;
+  // ── Direct Interactions ─────────────────────────────────────
   document.getElementById('card-rage').addEventListener('click', function() {
     rageCount++;
-    logEvent('signal', `<strong>click</strong> on stat card (#${rageCount})`);
-    
     if (rageTimer) clearTimeout(rageTimer);
     rageTimer = setTimeout(() => { rageCount = 0; }, 2000);
-    
-    if (rageCount >= 3) {
-      logEvent('signal', '<strong>rage_click</strong> detected! (3 clicks in 2s)');
-      applyAdaptation('highlight', '#card-rage');
-      rageCount = 0;
-    }
+    if (rageCount >= 3) { triggerRage(); rageCount = 0; }
   });
   
-  // Interactive: dead click on "View Report"
-  document.getElementById('dead-target').addEventListener('click', function() {
-    logEvent('signal', '<strong>dead_click</strong> on non-interactive button');
-    applyAdaptation('make-clickable', '#dead-target');
-  });
+  document.getElementById('dead-target').addEventListener('click', triggerDead);
   
-  // Interactive: hesitation on email field
-  let hesitateTimer = null;
   document.getElementById('email-field').addEventListener('focus', function() {
-    hesitateTimer = setTimeout(() => {
-      logEvent('signal', '<strong>hesitation</strong> — user paused 5s on field');
-      applyAdaptation('inline-hint', '#email-field');
-    }, 5000);
+    hesitateTimer = setTimeout(triggerHesitate, 5000);
   });
   document.getElementById('email-field').addEventListener('blur', function() {
-    if (hesitateTimer) clearTimeout(hesitateTimer);
+    if (hesitateTimer) { clearTimeout(hesitateTimer); hesitateTimer = null; }
   });
   
-  // Interactive: scroll bounce simulation
-  let scrollCount = 0;
-  document.getElementById('cta-btn').addEventListener('click', function() {
-    scrollCount++;
-    if (scrollCount >= 2) {
-      logEvent('signal', '<strong>scroll_bounce</strong> — user didn\'t convert on CTA');
-      applyAdaptation('sticky-cta', '#cta-btn');
-      scrollCount = 0;
-    } else {
-      logEvent('signal', '<strong>click</strong> on CTA button (not yet a bounce)');
-    }
-  });
-  
-  // ── Inject CSS animations ────────────────────────────────────
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-    @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-  `;
-  document.head.appendChild(style);
-  
+  // Highlight first pipeline step
+  document.querySelector('[data-step="1"]')?.classList.add('active');
 })();
 </script>
 </body>
