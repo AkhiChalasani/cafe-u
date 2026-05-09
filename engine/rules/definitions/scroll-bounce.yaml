@@ -1,0 +1,10 @@
+# Scroll Bounce Rules
+# Triggered when a user scrolls past content then back up
+rules:
+  - name: scroll-bounce-sticky-cta
+    description: Pin the call-to-action to the bottom of the viewport
+    signal: scroll_bounce
+    threshold: {}
+    action: sticky-cta
+    priority: 4
+    cooldown_ms: 30000

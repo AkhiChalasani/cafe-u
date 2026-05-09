@@ -1,0 +1,50 @@
+name: Bug Report
+description: Something isn't working as expected
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened? What did you expect to happen?
+      placeholder: |
+        I added the CAFE-u agent to my page, rage-clicked a button 5 times, but no adaptation fired.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Add `<script src="cafeu.js" data-key="test">` to index.html
+        2. Click the same `<div>` 5 times rapidly
+        3. No highlight or tooltip appears
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: CAFE-u version (from `__CAFE_U__.version` in browser console)
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output
+      description: Paste any browser console errors
+      render: shell
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options: [Chrome, Firefox, Safari, Edge, Other]
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context

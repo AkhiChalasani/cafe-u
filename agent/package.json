@@ -1,0 +1,31 @@
+{
+  "name": "cafeu-agent",
+  "version": "0.1.0",
+  "description": "CAFE-u Adaptive UI Agent — detects user frustration and adapts UI in real-time. Open-source, zero deps, 10KB.",
+  "main": "dist/cafeu.min.js",
+  "unpkg": "dist/cafeu.min.js",
+  "jsdelivr": "dist/cafeu.min.js",
+  "files": ["dist/"],
+  "scripts": {
+    "build": "node build.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ux", "usability", "adaptive-ui", "hci", "frustration-detection",
+    "rage-click", "user-behavior", "real-time", "cafeu", "ai-agent",
+    "human-computer-interaction", "ui-automation"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AkhiChalasani/cafe-u"
+  },
+  "bugs": {
+    "url": "https://github.com/AkhiChalasani/cafe-u/issues"
+  },
+  "homepage": "https://akhichalasani.github.io/cafe-u/",
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": false
+}

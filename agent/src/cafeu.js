@@ -1,0 +1,480 @@
+/**
+ * CAFE-u Agent — Adaptive UI Engine
+ * 
+ * Detects user frustration signals and applies real-time UI adaptations.
+ * Based on the CAFE-u research framework.
+ * 
+ * Size target: <3KB gzipped | Zero dependencies | Privacy-first
+ * 
+ * Usage:
+ *   <script src="cafeu.js" data-key="my-app"></script>
+ *   <script src="cafeu.js" data-key="my-app" data-endpoint="wss://my-server/ws"></script>
+ */
+
+(function (global) {
+  'use strict';
+
+  const VERSION = '0.1.0';
+  const SIGNAL_WINDOW = 3000;       // 3s window for signal clustering
+  const RAGE_THRESHOLD = 3;         // 3+ clicks = rage
+  const RAGE_WINDOW = 1200;         // Within 1.2s
+  const HESITATION_THRESHOLD = 5000; // 5s hesitation
+  const ADAPTATION_DEBOUNCE = 8000; // Don't re-adapt same element within 8s
+
+  // ── Config ───────────────────────────────────────────────────
+  const script = document.currentScript;
+  const config = {
+    apiKey: script?.getAttribute('data-key') || 'default',
+    endpoint: script?.getAttribute('data-endpoint') || '/api/signal',
+    wsEndpoint: script?.getAttribute('data-ws') || null,
+    disabled: script?.getAttribute('data-disable') !== null,
+  };
+
+  if (config.disabled) return;
+
+  // ── State ────────────────────────────────────────────────────
+  let ws = null;
+  let pendingSignals = [];
+  let flushTimer = null;
+  let clickHistory = new Map(); // cssPath -> [timestamps]
+  let adaptationHistory = new Map(); // cssPath -> last adapted timestamp
+  let hesitationTimer = null;
+  let lastScrollY = 0;
+  let scrollDirection = null;
+  let ctaPassed = false;
+
+  // ── Helpers ──────────────────────────────────────────────────
+  function cssPath(el) {
+    if (!el || el === document || el === document.body) return 'body';
+    const parts = [];
+    let cur = el;
+    while (cur && cur !== document.body && cur !== document) {
+      let sel = cur.tagName?.toLowerCase() || '';
+      if (cur.id) { parts.unshift(`#${cur.id}`); break; }
+      const parent = cur.parentElement;
+      if (parent) {
+        const siblings = Array.from(parent.children).filter(
+          c => c.tagName === cur.tagName
+        );
+        if (siblings.length > 1) {
+          sel += `:nth-child(${Array.from(parent.children).indexOf(cur) + 1})`;
+        }
+      }
+      parts.unshift(sel);
+      cur = cur.parentElement;
+    }
+    return parts.join(' > ');
+  }
+
+  function isInteractive(el) {
+    if (!el) return false;
+    const t = el.tagName?.toLowerCase();
+    if (['a', 'button', 'input', 'select', 'textarea'].includes(t)) return true;
+    if (el.getAttribute('role') === 'button' || el.onclick) return true;
+    return false;
+  }
+
+  function findNearestInteractive(el) {
+    let cur = el;
+    for (let i = 0; i < 5; i++) {
+      if (isInteractive(cur)) return cur;
+      if (cur.parentElement) cur = cur.parentElement;
+      else break;
+    }
+    return null;
+  }
+
+  function signal(type, data = {}) {
+    pendingSignals.push({
+      type,
+      timestamp: Date.now(),
+      pageUrl: window.location.href,
+      viewport: { w: window.innerWidth, h: window.innerHeight },
+      ...data,
+    });
+    if (pendingSignals.length >= 10) flush();
+    if (!flushTimer) flushTimer = setTimeout(flush, 2000);
+  }
+
+  function flush() {
+    if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
+    if (!pendingSignals.length) return;
+
+    const batch = pendingSignals;
+    pendingSignals = [];
+
+    // WebSocket
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ signals: batch }));
+      return;
+    }
+
+    // HTTP fallback
+    const body = JSON.stringify({ signals: batch, key: config.apiKey });
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(config.endpoint, body);
+    } else {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', config.endpoint, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(body);
+    }
+  }
+
+  // ── WebSocket ────────────────────────────────────────────────
+  function connectWS() {
+    if (!config.wsEndpoint) return;
+    try {
+      ws = new WebSocket(config.wsEndpoint);
+      ws.onmessage = (e) => {
+        try {
+          const msg = JSON.parse(e.data);
+          if (msg.adaptations) {
+            msg.adaptations.forEach(applyAdaptation);
+          }
+        } catch (_) {}
+      };
+      ws.onclose = () => setTimeout(connectWS, 5000);
+    } catch (_) {}
+  }
+
+  // ── ADAPTATION ENGINE ────────────────────────────────────────
+
+  /**
+   * The core innovation: apply UI adaptations to fix user frustration.
+   * Each adaptation is a {selector, action, params} instruction.
+   */
+  function applyAdaptation(ad) {
+    const el = document.querySelector(ad.selector);
+    if (!el) return;
+
+    // Debounce: don't re-adapt the same element repeatedly
+    const lastAdapt = adaptationHistory.get(ad.selector);
+    if (lastAdapt && Date.now() - lastAdapt < ADAPTATION_DEBOUNCE) return;
+    adaptationHistory.set(ad.selector, Date.now());
+
+    // Store original state so we can undo
+    const original = {
+      cursor: el.style.cursor,
+      border: el.style.border,
+      position: el.style.position,
+      boxShadow: el.style.boxShadow,
+      transform: el.style.transform,
+      onClick: el.onclick,
+      textDecoration: el.style.textDecoration,
+    };
+
+    switch (ad.action) {
+      case 'highlight': {
+        el.style.transition = 'all 0.3s ease';
+        el.style.boxShadow = '0 0 0 3px #f59e0b, 0 0 0 6px rgba(245,158,11,0.2)';
+        el.style.borderRadius = '4px';
+        setTimeout(() => {
+          el.style.boxShadow = original.boxShadow;
+        }, 4000);
+        break;
+      }
+
+      case 'make-clickable': {
+        el.style.cursor = 'pointer';
+        el.style.position = 'relative';
+        el.title = ad.tooltip || 'Click here';
+        // Add hover effect
+        el.addEventListener('mouseenter', function h() {
+          this.style.outline = '2px solid #3b82f6';
+          this.style.outlineOffset = '2px';
+        });
+        el.addEventListener('mouseleave', function h() {
+          this.style.outline = '';
+          this.style.outlineOffset = '';
+        });
+        break;
+      }
+
+      case 'tooltip': {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'cafeu-tooltip';
+        tooltip.textContent = ad.text || 'Need help with this?';
+        tooltip.style.cssText = `
+          position: absolute; z-index: 99999;
+          background: #1e293b; color: #f1f5f9;
+          padding: 8px 14px; border-radius: 8px;
+          font-size: 14px; font-family: -apple-system, sans-serif;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          pointer-events: none; animation: cafeuFadeIn 0.3s ease;
+          max-width: 280px; line-height: 1.4;
+        `;
+        document.body.appendChild(tooltip);
+
+        const rect = el.getBoundingClientRect();
+        tooltip.style.left = Math.min(rect.left + rect.width / 2 - 140, window.innerWidth - 300) + 'px';
+        tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
+
+        // Add fade-out animation
+        if (!document.getElementById('cafeu-styles')) {
+          const style = document.createElement('style');
+          style.id = 'cafeu-styles';
+          style.textContent = `
+            @keyframes cafeuFadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+            @keyframes cafeuPulse { 0%,100% { box-shadow:0 0 0 3px #f59e0b; } 50% { box-shadow:0 0 0 6px rgba(245,158,11,0.4); } }
+            .cafeu-pulse { animation: cafeuPulse 1.5s ease-in-out infinite; }
+          `;
+          document.head.appendChild(style);
+        }
+
+        setTimeout(() => {
+          tooltip.style.opacity = '0';
+          tooltip.style.transition = 'opacity 0.5s';
+          setTimeout(() => tooltip.remove(), 500);
+        }, 5000);
+        break;
+      }
+
+      case 'sticky-cta': {
+        const cta = el.cloneNode(true);
+        cta.className = 'cafeu-sticky-cta';
+        cta.style.cssText = `
+          position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+          z-index: 99998; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+          padding: 12px 24px; border-radius: 8px;
+          font-size: 16px; cursor: pointer;
+          animation: cafeuSlideUp 0.4s ease;
+        `;
+        // Copy original styles
+        cta.style.background = getComputedStyle(el).background || '#3b82f6';
+        cta.style.color = getComputedStyle(el).color || 'white';
+        cta.style.border = 'none';
+        cta.style.fontWeight = '600';
+        document.body.appendChild(cta);
+
+        if (!document.getElementById('cafeu-styles')) {
+          const style = document.createElement('style');
+          style.id = 'cafeu-styles';
+          style.textContent += `
+            @keyframes cafeuSlideUp { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+          `;
+          document.head.appendChild(style);
+        }
+
+        cta.addEventListener('click', () => el.click());
+        break;
+      }
+
+      case 'inline-hint': {
+        const hint = document.createElement('div');
+        hint.textContent = ad.text || '💡 ' + (el.getAttribute('placeholder') || 'Fill this in');
+        hint.style.cssText = `
+          font-size: 13px; color: #6b7280; margin-top: 4px;
+          padding: 4px 8px; background: #fef3c7; border-radius: 4px;
+          border-left: 3px solid #f59e0b;
+        `;
+        el.parentElement?.insertBefore(hint, el.nextSibling);
+        el.style.borderColor = '#f59e0b';
+        el.style.boxShadow = '0 0 0 2px rgba(245,158,11,0.2)';
+        setTimeout(() => {
+          hint.remove();
+          el.style.borderColor = '';
+          el.style.boxShadow = '';
+        }, 8000);
+        break;
+      }
+
+      case 'save-progress': {
+        const toast = document.createElement('div');
+        toast.textContent = '✅ ' + (ad.text || 'Progress saved. You can continue where you left off.');
+        toast.style.cssText = `
+          position: fixed; bottom: 20px; right: 20px; z-index: 99999;
+          background: #065f46; color: white;
+          padding: 12px 20px; border-radius: 10px;
+          font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+          animation: cafeuFadeIn 0.3s ease;
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+        break;
+      }
+
+      case 'dim-section': {
+        el.style.opacity = '0.4';
+        el.style.pointerEvents = 'none';
+        const fallback = document.createElement('div');
+        fallback.textContent = '⚠️ ' + (ad.text || 'This section is temporarily unavailable');
+        fallback.style.cssText = `
+          text-align: center; padding: 20px; color: #6b7280; font-size: 14px;
+        `;
+        el.parentElement?.insertBefore(fallback, el.nextSibling);
+        break;
+      }
+    }
+  }
+
+  // ── Local Rule Engine (lightweight, client-side) ─────────────
+  // If the engine is unreachable, the agent runs basic rules locally
+
+  function localAdaptation(signalData) {
+    const { type, element, el } = signalData;
+
+    switch (type) {
+      case 'rage_click': {
+        if (!el) return;
+        // Highlight the element
+        el.classList.add('cafeu-pulse');
+        
+        // Add tooltip after 3rd click
+        const path = cssPath(el);
+        const clicks = clickHistory.get(path) || [];
+        if (clicks.length >= 3) {
+          applyAdaptation({
+            selector: path,
+            action: 'tooltip',
+            text: 'Clicking this? Try the button below.',
+          });
+          applyAdaptation({
+            selector: path,
+            action: 'highlight',
+          });
+        }
+        break;
+      }
+
+      case 'dead_click': {
+        if (!el) return;
+        const path = cssPath(el);
+        const interactive = findNearestInteractive(el);
+        if (interactive) {
+          applyAdaptation({
+            selector: cssPath(interactive),
+            action: 'highlight',
+          });
+        } else {
+          // Make the dead element clickable
+          applyAdaptation({
+            selector: path,
+            action: 'make-clickable',
+            tooltip: 'Click to proceed',
+          });
+        }
+        break;
+      }
+
+      case 'hesitation': {
+        if (!el) return;
+        applyAdaptation({
+          selector: cssPath(el),
+          action: 'inline-hint',
+          text: 'Take your time — here\'s a hint.',
+        });
+        break;
+      }
+
+      case 'scroll_bounce': {
+        const cta = document.querySelector('[class*="cta"], [class*="button"], a[href*="sign"], a[href*="buy"], button:not([aria-hidden])');
+        if (cta) {
+          applyAdaptation({
+            selector: cssPath(cta),
+            action: 'sticky-cta',
+          });
+        }
+        break;
+      }
+
+      case 'form_abandon': {
+        const form = document.querySelector('form');
+        if (form) {
+          applyAdaptation({
+            selector: cssPath(form),
+            action: 'save-progress',
+            text: 'Your progress has been saved.',
+          });
+        }
+        break;
+      }
+    }
+  }
+
+  // ── Signal Detection ─────────────────────────────────────────
+
+  // Rage Click Detection
+  document.addEventListener('click', function (e) {
+    const target = e.target;
+    const path = cssPath(target);
+    const now = Date.now();
+
+    // Track click
+    if (!clickHistory.has(path)) clickHistory.set(path, []);
+    const clicks = clickHistory.get(path);
+    clicks.push(now);
+
+    // Purge old clicks
+    while (clicks.length && clicks[0] < now - RAGE_WINDOW) clicks.shift();
+
+    if (clicks.length >= RAGE_THRESHOLD) {
+      signal('rage_click', { element: path, count: clicks.length });
+      localAdaptation({ type: 'rage_click', element: path, el: target });
+      clickHistory.set(path, []);
+    }
+
+    // Dead click detection
+    if (!isInteractive(target)) {
+      signal('dead_click', { element: path });
+      localAdaptation({ type: 'dead_click', element: path, el: target });
+    }
+  }, true);
+
+  // Hesitation Detection (on form fields)
+  document.addEventListener('focusin', function (e) {
+    const target = e.target;
+    if (target.tagName?.toLowerCase() === 'input' || target.tagName?.toLowerCase() === 'textarea') {
+      hesitationTimer = setTimeout(() => {
+        signal('hesitation', { element: cssPath(target), fieldType: target.type });
+        localAdaptation({ type: 'hesitation', element: cssPath(target), el: target });
+      }, HESITATION_THRESHOLD);
+    }
+  }, true);
+
+  document.addEventListener('focusout', function () {
+    if (hesitationTimer) { clearTimeout(hesitationTimer); hesitationTimer = null; }
+  }, true);
+
+  // Scroll Bounce Detection
+  window.addEventListener('scroll', function () {
+    const sy = window.scrollY;
+    const dir = sy > lastScrollY ? 'down' : 'up';
+    
+    if (dir === 'up' && scrollDirection === 'down' && sy > 300) {
+      // User scrolled down then back up — they might have missed a CTA
+      signal('scroll_bounce', { depth: Math.round(sy / document.body.scrollHeight * 100) });
+      localAdaptation({ type: 'scroll_bounce' });
+    }
+    
+    scrollDirection = dir;
+    lastScrollY = sy;
+  }, { passive: true });
+
+  // Form Abandon Detection
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      const form = document.querySelector('form');
+      if (form && form.querySelector('input:not([type="hidden"])[value]')) {
+        signal('form_abandon', {});
+        localAdaptation({ type: 'form_abandon' });
+      }
+    }
+  });
+
+  // Page unload — flush pending signals
+  window.addEventListener('beforeunload', flush);
+
+  // ── Init WebSocket ───────────────────────────────────────────
+  if (config.wsEndpoint) connectWS();
+
+  // ── Expose API ───────────────────────────────────────────────
+  global.__CAFE_U__ = {
+    version: VERSION,
+    config,
+    applyAdaptation,
+    signal,
+    flush,
+  };
+
+})(window);

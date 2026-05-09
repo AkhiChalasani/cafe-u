@@ -1,0 +1,35 @@
+name: New Adaptation Rule
+description: Propose a new frustration → adaptation mapping
+labels: [adaptation-rule]
+body:
+  - type: textarea
+    id: signal
+    attributes:
+      label: Signal
+      description: What user behavior triggers this?
+      placeholder: "User double-taps a back button in a mobile app"
+    validations:
+      required: true
+  - type: textarea
+    id: adaptation
+    attributes:
+      label: Adaptation
+      description: What should the UI do in response?
+      placeholder: "Show a confirmation dialog: 'Are you sure you want to go back?'"
+    validations:
+      required: true
+  - type: input
+    id: threshold
+    attributes:
+      label: Suggested threshold
+      placeholder: "count >= 2 within 1s"
+  - type: textarea
+    id: config
+    attributes:
+      label: YAML config (optional)
+      render: yaml
+      placeholder: |
+        - name: back-button-confirm
+          signal: rapid_tap
+          threshold: {count: 2, window_ms: 1000}
+          action: show-confirm

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAFE-u Demo — Adaptive UI in Action</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; }
+  
+  .header { background: #1e293b; color: white; padding: 24px 40px; }
+  .header h1 { font-size: 24px; }
+  .header p { color: #94a3b8; margin-top: 4px; font-size: 14px; }
+  
+  .demo-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 0; min-height: calc(100vh - 100px); }
+  
+  /* App simulation */
+  .app-area { padding: 32px; }
+  .app-area h2 { font-size: 18px; margin-bottom: 16px; }
+  
+  .dead-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 16px; cursor: default; }
+  .dead-card h3 { font-size: 15px; margin-bottom: 8px; }
+  .dead-card p { font-size: 13px; color: #64748b; line-height: 1.5; }
+  .dead-card .fake-btn { display: inline-block; margin-top: 12px; padding: 8px 20px; background: #e2e8f0; color: #64748b; border-radius: 8px; font-size: 13px; cursor: default; }
+  
+  .stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 16px; cursor: pointer; transition: all 0.2s; }
+  .stat-card:hover { border-color: #3b82f6; }
+  .stat-card .value { font-size: 28px; font-weight: 700; color: #3b82f6; }
+  .stat-card .label { font-size: 13px; color: #64748b; margin-top: 2px; }
+  
+  .cta-section { background: #1e293b; border-radius: 12px; padding: 32px; text-align: center; margin-top: 16px; }
+  .cta-section h3 { color: white; font-size: 20px; margin-bottom: 12px; }
+  .cta-section p { color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
+  .cta-btn { display: inline-block; padding: 12px 32px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .cta-btn:hover { background: #2563eb; }
+  
+  .form-section { margin-top: 24px; }
+  .form-section label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #475569; }
+  .form-section input { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; margin-bottom: 12px; }
+  .form-section input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  
+  /* Sidebar */
+  .sidebar { background: #0f172a; color: #e2e8f0; padding: 24px; overflow-y: auto; }
+  .sidebar h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 16px; }
+  .sidebar .signal { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; margin-bottom: 8px; font-size: 13px; }
+  .sidebar .signal .type { font-weight: 600; display: block; margin-bottom: 4px; }
+  .sidebar .signal .detail { color: #94a3b8; font-size: 12px; }
+  .sidebar .signal.fired { border-left: 3px solid #3b82f6; }
+  .sidebar .signal.adapted { border-left: 3px solid #34d399; }
+  .sidebar .empty { color: #64748b; font-size: 13px; text-align: center; padding: 40px 0; }
+  
+  .instruction { margin-top: 16px; background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); border-radius: 8px; padding: 12px; font-size: 12px; }
+  .instruction .label { color: #34d399; font-weight: 600; display: block; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ CAFE-u Demo</h1>
+  <p>Try triggering frustration signals — see the UI adapt in real-time.</p>
+</div>
+
+<div class="demo-grid">
+  <div class="app-area">
+    <h2>Dashboard (simulated app)</h2>
+    
+    <!-- Dead click target — looks interactive, isn't -->
+    <div class="dead-card" id="dead-card">
+      <h3>📊 Monthly Report</h3>
+      <p>Your Q1 performance summary is ready. Revenue is up 23% compared to last quarter. Key metrics show strong growth in the enterprise segment with a 15% increase in average deal size.</p>
+      <div class="fake-btn" id="dead-target">View Full Report</div>
+      <p style="font-size:11px;color:#94a3b8;margin-top:8px;">⬆️ Click this button (it does nothing — dead click)</p>
+    </div>
+    
+    <!-- Rage click target -->
+    <div class="stat-card" id="rage-target">
+      <div class="value" id="rage-count">$12,847</div>
+      <div class="label">Monthly Recurring Revenue</div>
+      <p style="font-size:11px;color:#94a3b8;margin-top:4px;">⬆️ Click this card rapidly 3+ times (rage click)</p>
+    </div>
+    
+    <!-- CTA section for scroll bounce -->
+    <div class="cta-section" id="cta-section">
+      <h3>Upgrade to Pro</h3>
+      <p>Get unlimited reports, advanced analytics, and priority support.</p>
+      <button class="cta-btn" id="cta-btn">Upgrade Now →</button>
+    </div>
+    
+    <!-- Form for hesitation -->
+    <div class="form-section">
+      <label for="hesitate-field">Email Address</label>
+      <input type="email" id="hesitate-field" placeholder="Enter your email">
+      <p style="font-size:11px;color:#94a3b8;margin-top:-8px;">⬆️ Click this field and wait 5 seconds (hesitation)</p>
+    </div>
+  </div>
+  
+  <div class="sidebar">
+    <h3>📡 CAFE-u Activity</h3>
+    <div id="activity-log">
+      <div class="empty">Interact with the app to see CAFE-u in action</div>
+    </div>
+  </div>
+</div>
+
+<!-- CAFE-u Agent -->
+<script src="cafeu.js" data-key="cafeu-demo" data-ws="ws://localhost:8080/ws"></script>
+
+<script>
+// Demo logging
+(function() {
+  const log = document.getElementById('activity-log');
+  
+  function addLog(type, detail, status) {
+    const el = document.querySelector('.empty');
+    if (el) el.remove();
+    
+    const div = document.createElement('div');
+    div.className = 'signal ' + (status || 'fired');
+    div.innerHTML = `<span class="type">${type}</span><span class="detail">${detail}</span>`;
+    log.insertBefore(div, log.firstChild);
+    
+    // Show instruction if adapted
+    if (status === 'adapted') {
+      const instr = document.createElement('div');
+      instr.className = 'instruction';
+      instr.innerHTML = `<span class="label">✅ Adaptation Applied</span>${detail}`;
+      log.insertBefore(instr, log.firstChild);
+    }
+  }
+  
+  // Track CAFE-u adaptations
+  const orig = window.__CAFE_U__?.applyAdaptation;
+  if (window.__CAFE_U__) {
+    window.__CAFE_U__.applyAdaptation = function(ad) {
+      addLog('🔄 ' + ad.action, `Applied to "${ad.selector}"`, 'adapted');
+      return orig.call(this, ad);
+    };
+  }
+  
+  // Intercept signals
+  const origSignal = window.__CAFE_U__?.signal;
+  if (window.__CAFE_U__) {
+    window.__CAFE_U__.signal = function(type, data) {
+      addLog('📡 ' + type, `Element: ${data.element || 'N/A'}`, 'fired');
+      return origSignal.call(this, type, data);
+    };
+  }
+  
+  // Show CAFE-u is loaded
+  setTimeout(() => {
+    if (window.__CAFE_U__) {
+      addLog('✅ CAFE-u Active', `v${window.__CAFE_U__.version} | Agent loaded`, 'adapted');
+    }
+  }, 500);
+})();
+</script>
+</body>
+</html>

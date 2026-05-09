@@ -1,0 +1,21 @@
+# Dead Click Rules
+# Triggered when a user clicks on a non-interactive element
+rules:
+  - name: dead-click-make-interactive
+    description: Add cursor and hover effect to dead elements
+    signal: dead_click
+    threshold: {}
+    action: make-clickable
+    priority: 6
+    cooldown_ms: 10000
+
+  - name: dead-click-tooltip
+    description: Show tooltip pointing to the nearest working element
+    signal: dead_click
+    threshold:
+      frequency: 2
+    action: tooltip
+    params:
+      text: "Try clicking here instead"
+    priority: 5
+    cooldown_ms: 20000

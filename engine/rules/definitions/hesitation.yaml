@@ -1,0 +1,13 @@
+# Hesitation Rules
+# Triggered when a user pauses on a form field for too long
+rules:
+  - name: hesitation-inline-hint
+    description: Show contextual hint for hesitated fields
+    signal: hesitation
+    threshold:
+      duration_ms: 5000
+    action: inline-hint
+    params:
+      text: "💡 Need help with this field?"
+    priority: 5
+    cooldown_ms: 30000

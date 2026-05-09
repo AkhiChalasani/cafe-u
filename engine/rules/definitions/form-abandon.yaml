@@ -1,0 +1,12 @@
+# Form Abandon Rules
+# Triggered when a user leaves a page mid-form
+rules:
+  - name: form-abandon-save
+    description: Save progress and show resume toast
+    signal: form_abandon
+    threshold: {}
+    action: save-progress
+    params:
+      text: "Your progress has been saved. Come back anytime."
+    priority: 3
+    cooldown_ms: 60000

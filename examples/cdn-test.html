@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head><title>CAFE-u Demo</title></head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/cafeu-agent@0.1/dist/cafeu.min.js" data-key="demo"></script>
+<script>
+  if (window.__CAFE_U__) {
+    document.write('<h1>✅ CAFE-u Agent Loaded</h1>');
+    document.write('<p>Version: ' + window.__CAFE_U__.version + '</p>');
+    document.write('<p>Rage-click this page to see it in action.</p>');
+  } else {
+    document.write('<h1>❌ Agent failed to load</h1>');
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+name: Feature Request
+description: I have an idea for CAFE-u
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an idea. The best features solve real frustration (pun intended).
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user problem does this solve?
+      placeholder: "When a user rage-clicks a button, CAFE-u should also..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How would you implement this?
+      placeholder: "Add a new adaptation action type called 'expand' that..."
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Agent (JS SDK)
+        - Engine (Python API)
+        - Rules Engine
+        - ML Classifier
+        - Mobile SDK
+        - Dashboard
+        - Docs
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What else have you tried?
+  - type: checkboxes
+    id: willing
+    attributes:
+      label: Contribution
+      options:
+        - label: I'd be willing to implement this myself

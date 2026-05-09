@@ -1,0 +1,22 @@
+# Rage Click Rules
+# Triggered when a user clicks the same element rapidly (frustration signal)
+rules:
+  - name: rage-click-highlight
+    description: Pulsing highlight on rage-clicked elements
+    signal: rage_click
+    threshold:
+      count: 3
+    action: highlight
+    priority: 8
+    cooldown_ms: 8000
+
+  - name: rage-click-tooltip
+    description: Show helpful tooltip if rage continues
+    signal: rage_click
+    threshold:
+      count: 4
+    action: tooltip
+    params:
+      text: "Can we help you with this?"
+    priority: 7
+    cooldown_ms: 15000

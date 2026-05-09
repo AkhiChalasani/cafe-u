@@ -1,0 +1,36 @@
+# CAFE-u .gitignore
+# Prevent accidental commit of model cache, secrets, build artifacts
+
+# ML model cache
+engine/rules/model_cache.pkl
+engine/rules/scaler_cache.pkl
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+agent/dist/  # Only commit source, not build output
+
+# Environment
+.env
+.env.local
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+*.db
+*.sqlite

@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  engine:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - CAFEU_LLM_MODEL=${CAFEU_LLM_MODEL:-deepseek-v4-flash}
+    volumes:
+      - cafeu_data:/data
+      - cafeu_rag:/app/engine/rules/rag_cache
+    restart: unless-stopped
+
+  # Optional: demo site with nginx
+  demo:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./examples:/usr/share/nginx/html:ro
+      - ./agent/dist/cafeu.min.js:/usr/share/nginx/html/cafeu.min.js:ro
+    profiles:
+      - demo
+    restart: unless-stopped
+
+volumes:
+  cafeu_data:
+  cafeu_rag:

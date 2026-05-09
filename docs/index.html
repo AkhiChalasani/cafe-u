@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAFE-u — Adaptive UI Demo</title>
+<meta name="description" content="CAFE-u is an open-source AI agent that detects user frustration and adapts your UI in real-time. Try the live demo.">
+<meta property="og:title" content="CAFE-u — Adaptive UI Engine">
+<meta property="og:description" content="Your app detects frustration and fixes itself in real-time. Open-source, self-hosted, MIT licensed.">
+<meta property="og:image" content="https://raw.githubusercontent.com/AkhiChalasani/cafe-u/main/docs/og-image.png">
+<meta property="og:url" content="https://akhichalasani.github.io/cafe-u/">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0f; color: #e0e0e0; }
+  
+  .hero { text-align: center; padding: 60px 24px 40px; background: linear-gradient(180deg, #0f172a 0%, #0a0a0f 100%); }
+  .hero h1 { font-size: 42px; font-weight: 800; background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p { color: #94a3b8; font-size: 16px; margin-top: 12px; max-width: 600px; margin-inline: auto; line-height: 1.6; }
+  .hero .badges { margin-top: 20px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .hero .badges img { height: 24px; }
+  
+  .demo-container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  .demo-grid { display: grid; grid-template-columns: 1fr 320px; gap: 0; border-radius: 16px; overflow: hidden; border: 1px solid #222; }
+  
+  .app-area { background: #111118; padding: 32px; }
+  .app-area h2 { font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #94a3b8; }
+  
+  .instructions { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+  .instruction-chip { background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 6px 14px; border-radius: 20px; font-size: 12px; color: #64748b; }
+  .instruction-chip strong { color: #e0e0e0; }
+  
+  .dead-card { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 16px; cursor: default; }
+  .dead-card h3 { font-size: 15px; margin-bottom: 8px; }
+  .dead-card p { font-size: 13px; color: #64748b; line-height: 1.5; }
+  .dead-card .fake-btn { display: inline-block; margin-top: 12px; padding: 8px 20px; background: #333; color: #64748b; border-radius: 8px; font-size: 13px; cursor: default; }
+  
+  .stat-card { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 16px; cursor: pointer; transition: all 0.2s; }
+  .stat-card:hover { border-color: #3b82f6; }
+  .stat-card .value { font-size: 28px; font-weight: 700; color: #60a5fa; }
+  .stat-card .label { font-size: 13px; color: #64748b; margin-top: 2px; }
+  
+  .cta-section { background: #1e293b; border-radius: 12px; padding: 32px; text-align: center; margin-top: 16px; }
+  .cta-section h3 { color: white; font-size: 18px; margin-bottom: 8px; }
+  .cta-section p { color: #94a3b8; font-size: 14px; margin-bottom: 16px; }
+  .cta-btn { display: inline-block; padding: 10px 28px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .cta-btn:hover { background: #2563eb; }
+  
+  .form-section { margin-top: 20px; }
+  .form-section label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #94a3b8; }
+  .form-section input { width: 100%; padding: 10px 14px; background: #1a1a2e; border: 1px solid #333; border-radius: 8px; color: #e0e0e0; font-size: 14px; }
+  .form-section input:focus { outline: none; border-color: #3b82f6; }
+  
+  .sidebar { background: #0f172a; padding: 24px; overflow-y: auto; max-height: 600px; border-left: 1px solid #222; }
+  .sidebar h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #475569; margin-bottom: 16px; }
+  .sidebar .event { font-size: 12px; padding: 8px 0; border-bottom: 1px solid #1e293b; }
+  .sidebar .event .tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-right: 6px; }
+  .sidebar .event .tag.signal { background: rgba(96,165,250,0.15); color: #60a5fa; }
+  .sidebar .event .tag.adapt { background: rgba(52,211,153,0.15); color: #34d399; }
+  .sidebar .event .detail { color: #64748b; display: block; margin-top: 2px; }
+  .sidebar .empty { color: #475569; font-size: 12px; text-align: center; padding: 40px 0; }
+  
+  .setup-card { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+  .setup-card h3 { font-size: 14px; margin-bottom: 4px; }
+  .setup-card p { font-size: 12px; color: #64748b; margin-bottom: 12px; }
+  .setup-btn { padding: 8px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .setup-btn:hover { background: #2563eb; }
+  .setup-btn.off { background: #ef4444; }
+  .setup-btn.off:hover { background: #dc2626; }
+  .setup-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  
+  .footer { text-align: center; padding: 40px 24px; color: #475569; font-size: 13px; }
+  .footer a { color: #60a5fa; text-decoration: none; }
+  
+  @media (max-width: 768px) { .demo-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>⚡ CAFE-u</h1>
+  <p>Your app detects user frustration and adapts the UI in real-time.<br>Open-source AI agent. Try it below — no server needed.</p>
+  <div class="badges">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT">
+    <img src="https://img.shields.io/github/stars/AkhiChalasani/cafe-u" alt="Stars">
+    <img src="https://img.shields.io/badge/Python-3.11%2B-blue" alt="Python">
+  </div>
+</div>
+
+<div class="demo-container">
+  <div class="setup-card" id="engine-status">
+    <h3>🔌 Engine Connection</h3>
+    <p id="engine-text">Waiting for CAFE-u engine... Start it with: <code>docker run -p 8080:8080 ghcr.io/akhichalasani/cafeu-engine</code></p>
+    <button class="setup-btn" id="engine-btn" disabled>Connecting...</button>
+  </div>
+
+  <div class="demo-grid">
+    <div class="app-area">
+      <h2>📱 Simulated App</h2>
+      <div class="instructions">
+        <span class="instruction-chip"><strong>⬆️</strong> Click rapidly 3× on stat card</span>
+        <span class="instruction-chip"><strong>⬆️</strong> Click dead "View Report" button</span>
+        <span class="instruction-chip"><strong>⬆️</strong> Pause 5s on email field</span>
+      </div>
+      
+      <div class="dead-card" id="dead-card">
+        <h3>📊 Monthly Report</h3>
+        <p>Q1 performance summary. Revenue up 23%. Enterprise segment growing 15%.</p>
+        <div class="fake-btn" id="dead-target">View Full Report</div>
+      </div>
+      
+      <div class="stat-card" id="rage-target">
+        <div class="value">$12,847</div>
+        <div class="label">Monthly Recurring Revenue</div>
+      </div>
+      
+      <div class="cta-section" id="cta-section">
+        <h3>Upgrade to Pro</h3>
+        <p>Unlock advanced analytics and priority support.</p>
+        <button class="cta-btn" id="cta-btn">Upgrade Now →</button>
+      </div>
+      
+      <div class="form-section">
+        <label for="email-field">Email Address</label>
+        <input type="email" id="email-field" placeholder="Enter your email">
+      </div>
+    </div>
+    
+    <div class="sidebar" id="activity-log">
+      <h3>📡 CAFE-u Activity</h3>
+      <div class="empty">Interact with the demo to see CAFE-u in action</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <a href="https://github.com/AkhiChalasani/cafe-u">GitHub</a> · 
+  <a href="https://github.com/AkhiChalasani/cafe-u#readme">Docs</a> · 
+  MIT License · Built on <a href="#">CAFE-u research paper</a>
+</div>
+
+<!-- CAFE-u Agent (loads from CDN when published, falls back to local) -->
+<script src="cafeu.min.js" data-key="cafeu-demo"></script>
+<script>
+(function() {
+  // Engine connection
+  const ENGINE_URL = 'http://localhost:8080';
+  const engineBtn = document.getElementById('engine-btn');
+  const engineText = document.getElementById('engine-text');
+  let engineConnected = false;
+  
+  async function checkEngine() {
+    try {
+      const resp = await fetch(ENGINE_URL + '/health');
+      if (resp.ok) {
+        engineConnected = true;
+        engineBtn.textContent = '✅ Connected';
+        engineBtn.className = 'setup-btn';
+        engineBtn.disabled = false;
+        engineText.innerHTML = 'Engine running at port 8080. CAFE-u is active.';
+        addLog('system', 'Engine connected — ML + RAG pipeline ready');
+        return;
+      }
+    } catch(e) {}
+    engineConnected = false;
+    engineBtn.textContent = '🔌 Connect to Engine';
+    engineBtn.className = 'setup-btn';
+    engineBtn.disabled = false;
+    engineText.innerHTML = 'Start the engine locally: <code>docker run -p 8080:8080 ghcr.io/akhichalasani/cafeu-engine</code>';
+  }
+  
+  engineBtn.addEventListener('click', checkEngine);
+  
+  // Activity log
+  function addLog(type, detail) {
+    const log = document.getElementById('activity-log');
+    const empty = log.querySelector('.empty');
+    if (empty) empty.remove();
+    
+    const div = document.createElement('div');
+    div.className = 'event';
+    const tagClass = type === 'signal' ? 'signal' : 'adapt';
+    div.innerHTML = `<span class="tag ${tagClass}">${type === 'signal' ? '📡' : '✅'}</span> ${detail}`;
+    log.insertBefore(div, log.firstChild);
+  }
+  
+  // Intercept CAFE-u for demo logging
+  if (window.__CAFE_U__) {
+    const origSignal = window.__CAFE_U__.signal;
+    window.__CAFE_U__.signal = function(type, data) {
+      addLog('signal', `${type} on <strong>${data.element || 'N/A'}</strong>`);
+      return origSignal.call(this, type, data);
+    };
+    
+    const origAdapt = window.__CAFE_U__.applyAdaptation;
+    window.__CAFE_U__.applyAdaptation = function(ad) {
+      addLog('adapt', `Applied <strong>${ad.action}</strong> to ${ad.selector}`);
+      return origAdapt.call(this, ad);
+    };
+    
+    addLog('system', 'CAFE-u agent loaded (v' + window.__CAFE_U__.version + ')');
+  } else {
+    addLog('system', '⚠️ CAFE-u agent loaded in offline mode (local adaptations only)');
+  }
+  
+  // Try engine connection on load
+  setTimeout(checkEngine, 1000);
+})();
+</script>
+</body>
+</html>
