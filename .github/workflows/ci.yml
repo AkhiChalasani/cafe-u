@@ -37,11 +37,11 @@ jobs:
           python-version: "3.11"
           cache: "pip"
       - run: pip install -r engine/requirements.txt
-      - run: pip install pytest pytest-asyncio httpx scikit-learn numpy
+      - run: pip install pytest pytest-asyncio httpx scikit-learn numpy pytest-cov
       - name: Run tests
         run: |
           cd engine
-          python -m pytest tests/ -v --tb=short --cov=rules --cov=api
+          python -m pytest tests/ -v --tb=short
 
   # ── Agent Build ──────────────────────────────────────────────
   agent:
@@ -53,12 +53,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
-          cache-dependency-path: agent/package-lock.json
       - run: |
           cd agent
-          npm ci
-          npm run build
+          npm install
+          node build.js
       - run: ls -lh agent/dist/cafeu.min.js
 
   # ── Docker Build ─────────────────────────────────────────────
