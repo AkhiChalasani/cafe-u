@@ -4,10 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CAFE-u — Adaptive UI Demo</title>
-<meta name="description" content="CAFE-u is an open-source AI agent that detects user frustration and adapts your UI in real-time. Try the live demo.">
+<meta name="description" content="CAFE-u is an open-source AI agent that detects user frustration and adapts your UI in real-time. Try it live.">
 <meta property="og:title" content="CAFE-u — Adaptive UI Engine">
 <meta property="og:description" content="Your app detects frustration and fixes itself in real-time. Open-source, self-hosted, MIT licensed.">
-<meta property="og:image" content="https://raw.githubusercontent.com/AkhiChalasani/cafe-u/main/docs/og-image.png">
 <meta property="og:url" content="https://akhichalasani.github.io/cafe-u/">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -20,19 +19,29 @@
   .hero .badges img { height: 24px; }
   
   .demo-container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  
+  .engine-bar { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+  .engine-bar .status { display: flex; align-items: center; gap: 8px; }
+  .engine-bar .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .engine-bar .dot.green { background: #4ade80; }
+  .engine-bar .dot.yellow { background: #fbbf24; }
+  .engine-bar .dot.gray { background: #6b7280; }
+  .engine-bar .info { font-size: 13px; color: #94a3b8; }
+  
   .demo-grid { display: grid; grid-template-columns: 1fr 320px; gap: 0; border-radius: 16px; overflow: hidden; border: 1px solid #222; }
   
   .app-area { background: #111118; padding: 32px; }
-  .app-area h2 { font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #94a3b8; }
+  .app-area h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #94a3b8; }
   
-  .instructions { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-  .instruction-chip { background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 6px 14px; border-radius: 20px; font-size: 12px; color: #64748b; }
-  .instruction-chip strong { color: #e0e0e0; }
+  .trigger-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .trigger-btn { padding: 6px 14px; border: 1px solid #333; border-radius: 20px; background: transparent; color: #94a3b8; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+  .trigger-btn:hover { border-color: #60a5fa; color: #e0e0e0; }
+  .trigger-btn.active { border-color: #60a5fa; background: rgba(96,165,250,0.1); color: #60a5fa; }
   
-  .dead-card { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 16px; cursor: default; }
-  .dead-card h3 { font-size: 15px; margin-bottom: 8px; }
-  .dead-card p { font-size: 13px; color: #64748b; line-height: 1.5; }
-  .dead-card .fake-btn { display: inline-block; margin-top: 12px; padding: 8px 20px; background: #333; color: #64748b; border-radius: 8px; font-size: 13px; cursor: default; }
+  .card { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 16px; cursor: default; }
+  .card h3 { font-size: 15px; margin-bottom: 8px; }
+  .card p { font-size: 13px; color: #64748b; line-height: 1.5; }
+  .card .fake-btn { display: inline-block; margin-top: 12px; padding: 8px 20px; background: #333; color: #64748b; border-radius: 8px; font-size: 13px; cursor: default; }
   
   .stat-card { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 16px; cursor: pointer; transition: all 0.2s; }
   .stat-card:hover { border-color: #3b82f6; }
@@ -52,24 +61,23 @@
   
   .sidebar { background: #0f172a; padding: 24px; overflow-y: auto; max-height: 600px; border-left: 1px solid #222; }
   .sidebar h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #475569; margin-bottom: 16px; }
-  .sidebar .event { font-size: 12px; padding: 8px 0; border-bottom: 1px solid #1e293b; }
-  .sidebar .event .tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-right: 6px; }
-  .sidebar .event .tag.signal { background: rgba(96,165,250,0.15); color: #60a5fa; }
-  .sidebar .event .tag.adapt { background: rgba(52,211,153,0.15); color: #34d399; }
-  .sidebar .event .detail { color: #64748b; display: block; margin-top: 2px; }
+  .sidebar .event { padding: 8px 0; border-bottom: 1px solid #1e293b; font-size: 13px; display: flex; gap: 8px; align-items: flex-start; }
+  .sidebar .event .icon { flex-shrink: 0; }
+  .sidebar .event .text { color: #e0e0e0; }
+  .sidebar .event .text .highlight { color: #60a5fa; font-weight: 600; }
+  .sidebar .event .text .adapt { color: #4ade80; font-weight: 600; }
+  .sidebar .event .time { color: #475569; font-size: 11px; margin-left: auto; flex-shrink: 0; }
   .sidebar .empty { color: #475569; font-size: 12px; text-align: center; padding: 40px 0; }
   
-  .setup-card { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 24px; margin-bottom: 16px; }
-  .setup-card h3 { font-size: 14px; margin-bottom: 4px; }
-  .setup-card p { font-size: 12px; color: #64748b; margin-bottom: 12px; }
-  .setup-btn { padding: 8px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
-  .setup-btn:hover { background: #2563eb; }
-  .setup-btn.off { background: #ef4444; }
-  .setup-btn.off:hover { background: #dc2626; }
-  .setup-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .demo-instructions { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+  .demo-instructions span { font-size: 12px; color: #475569; }
   
   .footer { text-align: center; padding: 40px 24px; color: #475569; font-size: 13px; }
   .footer a { color: #60a5fa; text-decoration: none; }
+  
+  /* CAFE-u Adaptation styles (inline for demo) */
+  .cafeu-demo-highlight { animation: demoPulse 1.5s ease-in-out infinite; border-radius: 12px; }
+  @keyframes demoPulse { 0%,100% { box-shadow: 0 0 0 3px #f59e0b; } 50% { box-shadow: 0 0 0 6px rgba(245,158,11,0.4); } }
   
   @media (max-width: 768px) { .demo-grid { grid-template-columns: 1fr; } }
 </style>
@@ -78,7 +86,7 @@
 
 <div class="hero">
   <h1>⚡ CAFE-u</h1>
-  <p>Your app detects user frustration and adapts the UI in real-time.<br>Open-source AI agent. Try it below — no server needed.</p>
+  <p>Your app detects user frustration and adapts the UI in real-time.<br>Open-source AI agent. Try it below — works entirely in your browser.</p>
   <div class="badges">
     <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT">
     <img src="https://img.shields.io/github/stars/AkhiChalasani/cafe-u" alt="Stars">
@@ -87,33 +95,36 @@
 </div>
 
 <div class="demo-container">
-  <div class="setup-card" id="engine-status">
-    <h3>🔌 Engine Connection</h3>
-    <p id="engine-text">Waiting for CAFE-u engine... Start it with: <code>docker run -p 8080:8080 ghcr.io/akhichalasani/cafeu-engine</code></p>
-    <button class="setup-btn" id="engine-btn" disabled>Connecting...</button>
+  <div class="engine-bar">
+    <div class="status">
+      <span class="dot yellow" id="status-dot"></span>
+      <span id="status-text">CAFE-u Agent Active (Local Mode)</span>
+    </div>
+    <div class="info" id="engine-info">Without engine: rule-based adaptations · With engine: ML + RAG + LLM</div>
   </div>
 
   <div class="demo-grid">
     <div class="app-area">
       <h2>📱 Simulated App</h2>
-      <div class="instructions">
-        <span class="instruction-chip"><strong>⬆️</strong> Click rapidly 3× on stat card</span>
-        <span class="instruction-chip"><strong>⬆️</strong> Click dead "View Report" button</span>
-        <span class="instruction-chip"><strong>⬆️</strong> Pause 5s on email field</span>
+      <div class="trigger-bar">
+        <button class="trigger-btn" data-trigger="rage">🔥 Rage Click (3× rapid)</button>
+        <button class="trigger-btn" data-trigger="dead">💀 Dead Click</button>
+        <button class="trigger-btn" data-trigger="hesitate">⏳ Hesitation (5s)</button>
+        <button class="trigger-btn" data-trigger="scroll">📜 Scroll Bounce</button>
       </div>
       
-      <div class="dead-card" id="dead-card">
+      <div class="card" id="card-dead">
         <h3>📊 Monthly Report</h3>
         <p>Q1 performance summary. Revenue up 23%. Enterprise segment growing 15%.</p>
         <div class="fake-btn" id="dead-target">View Full Report</div>
       </div>
       
-      <div class="stat-card" id="rage-target">
+      <div class="stat-card" id="card-rage" data-click-count="0">
         <div class="value">$12,847</div>
-        <div class="label">Monthly Recurring Revenue</div>
+        <div class="label">Monthly Recurring Revenue (click rapidly 3×)</div>
       </div>
       
-      <div class="cta-section" id="cta-section">
+      <div class="cta-section" id="section-cta">
         <h3>Upgrade to Pro</h3>
         <p>Unlock advanced analytics and priority support.</p>
         <button class="cta-btn" id="cta-btn">Upgrade Now →</button>
@@ -123,87 +134,189 @@
         <label for="email-field">Email Address</label>
         <input type="email" id="email-field" placeholder="Enter your email">
       </div>
+
+      <div class="demo-instructions">
+        <span>⬆️ Click the trigger buttons above or interact directly</span>
+      </div>
     </div>
     
     <div class="sidebar" id="activity-log">
       <h3>📡 CAFE-u Activity</h3>
-      <div class="empty">Interact with the demo to see CAFE-u in action</div>
+      <div class="empty" id="empty-log">Click trigger buttons or interact with elements to see CAFE-u in action</div>
     </div>
   </div>
 </div>
 
 <div class="footer">
   <a href="https://github.com/AkhiChalasani/cafe-u">GitHub</a> · 
-  <a href="https://github.com/AkhiChalasani/cafe-u#readme">Docs</a> · 
-  MIT License · Built on <a href="#">CAFE-u research paper</a>
+  <a href="https://github.com/AkhiChalasani/cafe-u/blob/main/README.md">Docs</a> · 
+  <a href="https://github.com/AkhiChalasani/cafe-u/blob/main/CONTRIBUTING.md">Contribute</a> · 
+  MIT License
 </div>
 
-<!-- CAFE-u Agent (loads from CDN when published, falls back to local) -->
-<script src="cafeu.min.js" data-key="cafeu-demo"></script>
 <script>
 (function() {
-  // Engine connection
-  const ENGINE_URL = 'http://localhost:8080';
-  const engineBtn = document.getElementById('engine-btn');
-  const engineText = document.getElementById('engine-text');
-  let engineConnected = false;
+  // ── Activity Log ────────────────────────────────────────────
+  const log = document.getElementById('activity-log');
   
-  async function checkEngine() {
-    try {
-      const resp = await fetch(ENGINE_URL + '/health');
-      if (resp.ok) {
-        engineConnected = true;
-        engineBtn.textContent = '✅ Connected';
-        engineBtn.className = 'setup-btn';
-        engineBtn.disabled = false;
-        engineText.innerHTML = 'Engine running at port 8080. CAFE-u is active.';
-        addLog('system', 'Engine connected — ML + RAG pipeline ready');
-        return;
-      }
-    } catch(e) {}
-    engineConnected = false;
-    engineBtn.textContent = '🔌 Connect to Engine';
-    engineBtn.className = 'setup-btn';
-    engineBtn.disabled = false;
-    engineText.innerHTML = 'Start the engine locally: <code>docker run -p 8080:8080 ghcr.io/akhichalasani/cafeu-engine</code>';
-  }
-  
-  engineBtn.addEventListener('click', checkEngine);
-  
-  // Activity log
-  function addLog(type, detail) {
-    const log = document.getElementById('activity-log');
-    const empty = log.querySelector('.empty');
+  function logEvent(type, msg) {
+    const empty = document.getElementById('empty-log');
     if (empty) empty.remove();
     
     const div = document.createElement('div');
     div.className = 'event';
-    const tagClass = type === 'signal' ? 'signal' : 'adapt';
-    div.innerHTML = `<span class="tag ${tagClass}">${type === 'signal' ? '📡' : '✅'}</span> ${detail}`;
+    
+    const icon = type === 'signal' ? '📡' : type === 'adapt' ? '✅' : '⚡';
+    const textClass = type === 'adapt' ? 'adapt' : 'highlight';
+    
+    div.innerHTML = `
+      <span class="icon">${icon}</span>
+      <span class="text"><span class="${textClass}">${type}</span> ${msg}</span>
+      <span class="time">${new Date().toLocaleTimeString()}</span>
+    `;
     log.insertBefore(div, log.firstChild);
   }
   
-  // Intercept CAFE-u for demo logging
-  if (window.__CAFE_U__) {
-    const origSignal = window.__CAFE_U__.signal;
-    window.__CAFE_U__.signal = function(type, data) {
-      addLog('signal', `${type} on <strong>${data.element || 'N/A'}</strong>`);
-      return origSignal.call(this, type, data);
+  logEvent('system', 'CAFE-u demo ready. Try the triggers below.');
+  
+  // ── Adaptation Engine (simulated, runs in-browser) ──────────
+  function applyAdaptation(type, selector) {
+    const el = document.querySelector(selector);
+    if (!el) return;
+    
+    const adaptations = {
+      'highlight': () => {
+        el.classList.add('cafeu-demo-highlight');
+        logEvent('adapt', `<strong>highlight</strong> on <code>${selector}</code>`);
+        setTimeout(() => el.classList.remove('cafeu-demo-highlight'), 4000);
+      },
+      'tooltip': () => {
+        const tip = document.createElement('div');
+        tip.textContent = '💡 Can we help you with this?';
+        tip.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e293b;color:white;padding:10px 18px;border-radius:10px;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3);animation:fadeIn 0.3s;';
+        document.body.appendChild(tip);
+        logEvent('adapt', `<strong>tooltip</strong> — "Can we help you?"`);
+        setTimeout(() => { tip.style.opacity = '0'; tip.style.transition = 'opacity 0.5s'; setTimeout(() => tip.remove(), 500); }, 4000);
+      },
+      'make-clickable': () => {
+        el.style.cursor = 'pointer';
+        el.style.border = '2px solid #3b82f6';
+        el.style.color = '#3b82f6';
+        el.style.background = 'rgba(59,130,246,0.1)';
+        el.textContent = '📄 View Report (now clickable)';
+        el.addEventListener('click', () => logEvent('adapt', 'User clicked the now-functional report button'));
+        logEvent('adapt', `<strong>make-clickable</strong> on <code>${selector}</code>`);
+      },
+      'sticky-cta': () => {
+        const clone = el.cloneNode(true);
+        clone.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9998;padding:12px 32px;background:#3b82f6;color:white;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.3);animation:slideUp 0.4s;';
+        clone.id = 'sticky-cta-clone';
+        const old = document.getElementById('sticky-cta-clone');
+        if (old) old.remove();
+        document.body.appendChild(clone);
+        logEvent('adapt', `<strong>sticky-cta</strong> — CTA pinned to viewport`);
+        clone.addEventListener('click', () => logEvent('adapt', 'User clicked the sticky CTA'));
+      },
+      'inline-hint': () => {
+        const hint = document.createElement('div');
+        hint.textContent = '💡 We\'ll never share your email';
+        hint.style.cssText = 'font-size:13px;color:#f59e0b;margin-top:4px;';
+        el.parentElement?.appendChild(hint);
+        el.style.borderColor = '#f59e0b';
+        logEvent('adapt', `<strong>inline-hint</strong> — showing hint below field`);
+        setTimeout(() => { hint.remove(); el.style.borderColor = ''; }, 5000);
+      },
     };
     
-    const origAdapt = window.__CAFE_U__.applyAdaptation;
-    window.__CAFE_U__.applyAdaptation = function(ad) {
-      addLog('adapt', `Applied <strong>${ad.action}</strong> to ${ad.selector}`);
-      return origAdapt.call(this, ad);
-    };
-    
-    addLog('system', 'CAFE-u agent loaded (v' + window.__CAFE_U__.version + ')');
-  } else {
-    addLog('system', '⚠️ CAFE-u agent loaded in offline mode (local adaptations only)');
+    const fn = adaptations[type];
+    if (fn) fn();
   }
   
-  // Try engine connection on load
-  setTimeout(checkEngine, 1000);
+  // ── Trigger Handlers ────────────────────────────────────────
+  
+  // Button triggers
+  document.querySelectorAll('[data-trigger]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const type = this.dataset.trigger;
+      switch(type) {
+        case 'rage':
+          logEvent('signal', '<strong>rage_click</strong> on <code>#card-rage</code> (count: 4)');
+          applyAdaptation('highlight', '#card-rage');
+          setTimeout(() => applyAdaptation('tooltip', '#card-rage'), 1500);
+          break;
+        case 'dead':
+          document.getElementById('card-dead').style.borderColor = '#f59e0b';
+          logEvent('signal', '<strong>dead_click</strong> on <code>.fake-btn</code>');
+          applyAdaptation('make-clickable', '#dead-target');
+          break;
+        case 'hesitate':
+          logEvent('signal', '<strong>hesitation</strong> on <code>#email-field</code> (5.2s)');
+          applyAdaptation('inline-hint', '#email-field');
+          break;
+        case 'scroll':
+          logEvent('signal', '<strong>scroll_bounce</strong> — user scrolled past CTA');
+          applyAdaptation('sticky-cta', '#cta-btn');
+          break;
+      }
+    });
+  });
+  
+  // Interactive: rage click on stat card
+  let rageCount = 0;
+  let rageTimer = null;
+  document.getElementById('card-rage').addEventListener('click', function() {
+    rageCount++;
+    logEvent('signal', `<strong>click</strong> on stat card (#${rageCount})`);
+    
+    if (rageTimer) clearTimeout(rageTimer);
+    rageTimer = setTimeout(() => { rageCount = 0; }, 2000);
+    
+    if (rageCount >= 3) {
+      logEvent('signal', '<strong>rage_click</strong> detected! (3 clicks in 2s)');
+      applyAdaptation('highlight', '#card-rage');
+      rageCount = 0;
+    }
+  });
+  
+  // Interactive: dead click on "View Report"
+  document.getElementById('dead-target').addEventListener('click', function() {
+    logEvent('signal', '<strong>dead_click</strong> on non-interactive button');
+    applyAdaptation('make-clickable', '#dead-target');
+  });
+  
+  // Interactive: hesitation on email field
+  let hesitateTimer = null;
+  document.getElementById('email-field').addEventListener('focus', function() {
+    hesitateTimer = setTimeout(() => {
+      logEvent('signal', '<strong>hesitation</strong> — user paused 5s on field');
+      applyAdaptation('inline-hint', '#email-field');
+    }, 5000);
+  });
+  document.getElementById('email-field').addEventListener('blur', function() {
+    if (hesitateTimer) clearTimeout(hesitateTimer);
+  });
+  
+  // Interactive: scroll bounce simulation
+  let scrollCount = 0;
+  document.getElementById('cta-btn').addEventListener('click', function() {
+    scrollCount++;
+    if (scrollCount >= 2) {
+      logEvent('signal', '<strong>scroll_bounce</strong> — user didn\'t convert on CTA');
+      applyAdaptation('sticky-cta', '#cta-btn');
+      scrollCount = 0;
+    } else {
+      logEvent('signal', '<strong>click</strong> on CTA button (not yet a bounce)');
+    }
+  });
+  
+  // ── Inject CSS animations ────────────────────────────────────
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  `;
+  document.head.appendChild(style);
+  
 })();
 </script>
 </body>
