@@ -31,7 +31,7 @@ Examples of unacceptable behavior:
 
 Project maintainers are responsible for clarifying and enforcing our standards.
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the project team at cakhilchowdary@gmail.com. All complaints will
+reported to the project team at chalasaniakhil010@gmail.com. All complaints will
 be reviewed and investigated promptly and fairly.
 
 ## Attribution

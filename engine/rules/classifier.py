@@ -12,15 +12,11 @@ Architecture:
 Falls back gracefully when no training data exists.
 """
 
-import math
-import json
 import logging
 import pickle
-import os
 from pathlib import Path
 from typing import Optional
 from datetime import datetime, timezone
-from collections import defaultdict
 
 logger = logging.getLogger("cafeu.ml")
 

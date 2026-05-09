@@ -108,7 +108,7 @@ open ../examples/demo.html
 ## Getting Help
 
 - Open a GitHub Discussion
-- Email: cakhilchowdary@gmail.com
+- Email: chalasaniakhil010@gmail.com
 
 ---
 

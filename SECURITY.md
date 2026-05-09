@@ -6,7 +6,7 @@ CAFE-u processes user behavior signals in real-time. We take security seriously.
 
 **Do not open a public issue for security vulnerabilities.**
 
-Instead, email: **cakhilchowdary@gmail.com**
+Instead, email: **chalasaniakhil010@gmail.com**
 
 We will:
 1. Acknowledge receipt within 48 hours

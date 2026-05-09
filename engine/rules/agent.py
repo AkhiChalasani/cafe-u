@@ -16,7 +16,7 @@ import os
 import json
 import logging
 from typing import Optional
-from datetime import datetime, timezone
+
 
 from .rag_store import RAGStore
 from .classifier import FrustrationClassifier
@@ -111,7 +111,7 @@ class AIAgent:
                 self.llm_client = None
         else:
             logger.info("No LLM configured — agent will use rule-based fallback")
-            logger.info(f"  Set DEEPSEEK_API_KEY or OPENAI_API_KEY env var to enable LLM")
+            logger.info("  Set DEEPSEEK_API_KEY or OPENAI_API_KEY env var to enable LLM")
 
     def decide(self, signal: dict, history: list[dict]) -> dict:
         """

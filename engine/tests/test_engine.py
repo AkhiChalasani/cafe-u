@@ -2,19 +2,16 @@
 Tests for the CAFE-u Rules Engine and ML Classifier.
 """
 
-import os
 import sys
-import json
-import tempfile
 from pathlib import Path
 
 # Ensure engine is on path
 _engine_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(_engine_dir))
 
-import pytest
-from rules.engine import RulesEngine, Rule
-from rules.classifier import FrustrationClassifier, FeatureExtractor
+import pytest  # noqa: E402
+from rules.engine import RulesEngine, Rule  # noqa: E402
+from rules.classifier import FrustrationClassifier, FeatureExtractor  # noqa: E402
 
 
 # ── Fixtures ──────────────────────────────────────────────────
@@ -120,9 +117,8 @@ class TestRulesEngine:
         # Fire same signal twice rapidly
         s = {"type": "rage_click", "element": "btn", "count": 5, "timestamp": 1000}
         r1 = engine.process([s])
-        r2 = engine.process([s])
         assert len(r1) == 1  # First fires
-        # Second might be cooldowned — not guaranteed, depends on timing
+        # Second might be cooldowned — not guaranteed
 
     def test_ml_enrichment(self, engine):
         s = {"type": "rage_click", "element": "btn", "count": 5, "timestamp": 1000}
@@ -149,7 +145,7 @@ class TestMLClassifier:
 
     def test_classifier_initializes(self, fresh_classifier):
         assert fresh_classifier is not None
-        assert fresh_classifier.trained == False
+        assert not fresh_classifier.trained
         assert len(fresh_classifier.training_data) == 0
 
     def test_feature_extraction(self):
@@ -189,7 +185,7 @@ class TestMLClassifier:
         for i in range(12):
             fresh_classifier.update(signal, [], was_frustrated=(i < 9))
         fresh_classifier._train()
-        assert fresh_classifier.trained == True
+        assert fresh_classifier.trained
 
     def test_heuristic_weights_by_type(self, fresh_classifier):
         signals = [

@@ -8,13 +8,11 @@ Uses FAISS for fast vector search. Falls back to keyword match if FAISS unavaila
 """
 
 import json
-import pickle
 import logging
 import hashlib
 import numpy as np
 from pathlib import Path
-from typing import Optional, Any
-from collections import defaultdict
+from typing import Optional
 from datetime import datetime, timezone
 
 logger = logging.getLogger("cafeu.rag")

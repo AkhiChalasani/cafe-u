@@ -5,12 +5,9 @@ Now with ML-powered frustration classification.
 Rules are loaded from YAML files in rules/definitions/.
 """
 
-import os
-import json
 import logging
 from pathlib import Path
 from typing import Optional
-from collections import defaultdict
 from datetime import datetime, timezone
 
 try:
@@ -263,7 +260,7 @@ class RulesEngine:
             prob = self.classifier.predict(signal, self.signal_history)
             signal["frustration_probability"] = round(prob, 3)
             signal["ml_triggered"] = prob >= self.ml_threshold
-        except Exception as e:
+        except Exception:
             signal["frustration_probability"] = 0.0
             signal["ml_triggered"] = False
         

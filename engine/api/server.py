@@ -3,15 +3,13 @@ CAFE-u Engine — Main application with FastAPI.
 """
 
 import json
-import yaml
 import logging
 import sys
 from pathlib import Path
 from contextlib import asynccontextmanager
-from typing import Optional
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # Ensure parent is on path for imports
@@ -19,8 +17,8 @@ _engine_dir = Path(__file__).parent.parent
 if str(_engine_dir) not in sys.path:
     sys.path.insert(0, str(_engine_dir))
 
-from engine.rules.engine import RulesEngine
-from engine import __version__
+from engine.rules.engine import RulesEngine  # noqa: E402
+from engine import __version__  # noqa: E402
 
 logger = logging.getLogger("cafeu")
 
